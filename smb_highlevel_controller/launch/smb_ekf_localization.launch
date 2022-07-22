@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+
+  <!-- GAZEBO ARGUMENTS -->
+  <!-- Run Gazebo headless -->
+  <arg name="headless"                              default="false"/>
+  <!-- Model path -->
+  <arg name="model_path"                            default="$(find smb_gazebo)/"/>
+  <arg name="robot_namespace"                       default=""/>
+  <arg name="robot_model_name"                      default="smb"/>
+  <arg name="enable_ekf"                            default="true"/>
+
+  <!-- Name of the world -->
+  <arg name="world"                                 default="empty"/>
+  <!-- Path to the world file -->
+  <!--<arg name="world_file"                            default="$(find smb_common)/worlds/$(arg world).world"/>-->
+  <!-- <arg name="world_file"                            default="/usr/share/gazebo-11/worlds/robocup14_spl_field.world"/> -->
+  <arg name="world_file"                            default="$(find smb_highlevel_controller)/worlds/singlePillar.world"/>
+  <arg name="laser_enabled"							            default="true"/>
+
+  <!-- Set the initial pose of the robot's main body -->
+  <arg name="x"                                     default="0.0"/>
+  <arg name="y"                                     default="0.0"/>
+  <arg name="z"                                     default="0.4"/>
+  <arg name="roll"                                  default="0.0"/>
+  <arg name="pitch"                                 default="0.0"/>
+  <arg name="yaw"                                   default="0.0"/>
+  <!-- Start paused -->
+  <arg name="paused"                                default="false"/>
+  <!-- Use simulation clock -->
+  <arg name="use_sim_time"                          default="true"/>
+  <!-- Debug mode -->
+  <arg name="debug"                                 default="false"/>
+  <!-- Verbose mode -->
+  <arg name="verbose"                               default="true"/>
+
+  <arg name="laser_scan_min_height"                  default="-0.2"/>
+  <arg name="laser_scan_max_height"                  default="1.0"/>
+
+  <!-- GUI ARGUMENTS -->+
+  <!-- Enable/disable Gazebo GUI -->
+  <arg name="run_gui"                               default="true"/>
+  
+  <!-- ROBOT ARGUMENTS -->
+  <!-- Name of the robot description parameter -->
+  <arg name="robot_description" default="robot_description"/>
+
+  <!-- Load Gazebo world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <env name="GAZEBO_MODEL_PATH" value="$(arg model_path)"/>
+    <arg name="world_name"        value="$(arg world_file)"/>
+    <arg name="paused"            value="$(arg paused)"/>
+    <arg name="use_sim_time"      value="$(arg use_sim_time)"/>
+    <arg name="gui"               value="$(arg run_gui)"/>
+    <arg name="headless"          value="$(arg headless)"/>
+    <arg name="debug"             value="$(arg debug)"/>
+    <arg name="verbose"           value="$(arg verbose)"/>
+  </include>
+
+    <!-- Spawn robot in Gazebo -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
+    args="-param $(arg robot_description) -urdf -model $(arg robot_model_name) -x $(arg x)
+      -y $(arg y) -z $(arg z) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"
+    output="screen"/>
+
+    <!-- <param name="use_sim_time" value="true"/> -->
+
+     <!-- smb_highlevel_controller node -->
+    <node name="smb_highlevel_controller" pkg="smb_highlevel_controller" type="smb_highlevel_controller" output="screen">
+    <rosparam command="load" file="$(find smb_highlevel_controller)/config/default.yaml"/>
+    </node>
+
+    
+    <!-- ekf localization node --> 
+    <node name="ekf_localization" pkg="robot_localization" type="ekf_localization_node" output="screen">
+    <rosparam command="load" file="$(find smb_control)/config/localization.yaml"/>
+    </node>
+
+    <!-- tf static publisher 2m above smb -->
+   <node name="smb_top_view" pkg="tf" type="static_transform_publisher" args="0 0 2 0 0 0 1 base_link smb_top_view 100"/>
+
+   <!-- rviz -->
+    <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find smb_highlevel_controller)/config/smb.rviz" />
+
+  <!-- robot state publisher, commented out from control.launch file -->
+    <node name="smb_robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen">
+    <param name="publish_frequency" value="50"/>
+    <param name="use_tf_static"     value="true"/>
+    <remap from="robot_description" to="$(arg robot_description)"/>
+  </node>
+
+    <include file="$(find smb_control)/launch/control.launch">
+    <arg name="simulation"      default="true"/>
+    <arg name="robot_namespace"     default="$(arg robot_namespace)"/>
+    <arg name="robot_description"   default="$(arg robot_description)"/>
+    <!-- <arg name="enable_ekf"          default="$(arg enable_ekf)" /> -->
+    <!-- commented ekf_localization node from smb_control file -->
+  </include>
+
+  
+
+
+
+</launch>

@@ -1,0 +1,1 @@
+/usr/bin/clang++-10 -fPIC -g  -shared -Wl,-soname,libgtest_maind.so -o ../lib/libgtest_maind.so CMakeFiles/gtest_main.dir/src/gtest_main.cc.o  -Wl,-rpath,/home/lynx/second_catkin_ws/src/smb_highlevel_controller/build/gtest/lib ../lib/libgtestd.so -lpthread 

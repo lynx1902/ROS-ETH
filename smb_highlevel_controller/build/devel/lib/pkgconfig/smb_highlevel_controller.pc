@@ -1,0 +1,8 @@
+prefix=/home/lynx/second_catkin_ws/src/smb_highlevel_controller/build/devel
+
+Name: smb_highlevel_controller
+Description: Description of smb_highlevel_controller
+Version: 0.0.0
+Cflags: -I/home/lynx/second_catkin_ws/src/smb_highlevel_controller/include
+Libs: -L${prefix}/lib 
+Requires: roscpp sensor_msgs geometry_msgs

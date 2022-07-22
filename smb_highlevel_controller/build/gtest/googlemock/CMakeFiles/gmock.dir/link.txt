@@ -1,0 +1,1 @@
+/usr/bin/clang++-10 -fPIC -g  -shared -Wl,-soname,libgmockd.so -o ../lib/libgmockd.so CMakeFiles/gmock.dir/src/gmock-all.cc.o  -Wl,-rpath,/home/lynx/second_catkin_ws/src/smb_highlevel_controller/build/gtest/lib ../lib/libgtestd.so -lpthread 

@@ -1,0 +1,8 @@
+scanTopic_: /scan
+
+laserScanTopic_ : /rslidar_points
+
+serviceTopic_: /start_stop_smb
+
+controlGain_: 1.2
+
